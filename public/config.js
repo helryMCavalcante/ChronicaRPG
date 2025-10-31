@@ -1,0 +1,5 @@
+window.__CHRONICA_CONFIG__ = {
+  SUPABASE_URL: '',
+  SUPABASE_ANON_KEY: '',
+  SERVER_BASE_URL: ''
+};

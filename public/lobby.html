@@ -12,11 +12,12 @@
     <header class="nav-actions">
       <div>
         <h1>Salas</h1>
-        <p>Crie ou entre em mesas com até 10 participantes.</p>
+        <p>Crie ou entre em mesas persistentes com seus amigos.</p>
       </div>
-      <div class="theme-toggle">
-        <button id="btn-theme" class="ghost" type="button" aria-label="Alternar tema">🌗</button>
-        <button id="btn-logout" class="ghost" type="button">Trocar perfil</button>
+      <div class="theme-toggle" id="auth-controls">
+        <span id="auth-state" class="muted">Desconectado</span>
+        <button id="btn-login" class="ghost" type="button">Entrar</button>
+        <button id="btn-logout" class="ghost" type="button">Sair</button>
       </div>
     </header>
 
@@ -28,19 +29,11 @@
           <input name="name" required maxlength="50" placeholder="Expedição ao Norte">
         </label>
         <label>
-          <span>Descrição</span>
-          <input name="description" maxlength="200" placeholder="Sessão cooperativa">
-        </label>
-        <label>
           <span>Privada?</span>
           <select name="isPrivate">
             <option value="no" selected>Não</option>
             <option value="yes">Sim</option>
           </select>
-        </label>
-        <label>
-          <span>Senha (opcional)</span>
-          <input name="password" maxlength="100" placeholder="****">
         </label>
         <button class="primary" type="submit">Criar sala</button>
       </form>
@@ -54,8 +47,10 @@
 
   <div class="toast-container" aria-live="assertive"></div>
 
-  <script src="/socket.io/socket.io.js"></script>
+  <script src="config.js"></script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" integrity="sha384-S0V4VpWwfvX2gYdEx+kt1/3uzMdGII4XESyqSeX5TR1+t0NenE2no0RvrRZtGJPD" crossorigin="anonymous"></script>
   <script type="module" src="js/ui.js"></script>
+  <script type="module" src="js/supabaseClient.js"></script>
   <script type="module" src="js/auth.js"></script>
   <script type="module" src="js/socket.js"></script>
   <script type="module" src="js/lobby.js"></script>

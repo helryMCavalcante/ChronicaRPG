@@ -1,93 +1,78 @@
-import { toast } from './ui.js';
+import { apiRequest } from './api.js';
+import { toast, formatTime } from './ui.js';
 
-const dicePattern = /([+-]?)(\d*)d(\d+)(!?)(?:(kh|kl)(\d+))?/i;
+const rollHistory = document.getElementById('roll-history');
+const btnRollD20 = document.getElementById('btn-roll-d20');
+const rollForm = document.getElementById('roll-form');
+const rollFormula = document.getElementById('roll-formula');
 
-export function rollExpression(input) {
-  const expression = input.trim();
-  if (!expression) {
-    return {
-      rolls: [],
-      total: 0,
-      detail: [],
-      label: ''
-    };
+let roomId;
+
+function getAuthor(roll) {
+  return roll.user?.email || roll.user_id || 'Jogador';
+}
+
+export function renderRoll(roll) {
+  if (!rollHistory) return;
+  const container = document.createElement('article');
+  container.className = 'message roll-result';
+  const meta = document.createElement('div');
+  meta.className = 'meta';
+  meta.innerHTML = `<strong>${getAuthor(roll)}</strong>`;
+  const time = document.createElement('span');
+  time.className = 'muted';
+  const created = roll.created_at ? new Date(roll.created_at).getTime() : Date.now();
+  time.textContent = formatTime(created);
+  meta.append(time);
+  const body = document.createElement('div');
+  body.className = 'body';
+  const result = roll.result || {};
+  const detail = Array.isArray(result.rolls) ? result.rolls.join(', ') : '';
+  body.innerHTML = `<p>${roll.formula} → <strong>${result.total ?? '?'}</strong></p>`;
+  if (detail) {
+    body.innerHTML += `<small>Dados: [${detail}]</small>`;
   }
+  container.append(meta, body);
+  rollHistory.prepend(container);
+}
 
-  let label = '';
-  let body = expression;
-  const labelIndex = expression.indexOf('#');
-  if (labelIndex !== -1) {
-    label = expression.slice(labelIndex + 1).trim();
-    body = expression.slice(0, labelIndex).trim();
+export async function executeRoll(formula, id) {
+  try {
+    await apiRequest('/rolls', {
+      method: 'POST',
+      body: { room_id: id, formula }
+    });
+  } catch (error) {
+    toast(error.message);
   }
+}
 
-  const tokens = body.split(/\s+/).filter(Boolean);
-  let adv = false;
-  let dis = false;
-  for (let i = tokens.length - 1; i >= 0; i -= 1) {
-    const token = tokens[i].toLowerCase();
-    if (token === 'adv') {
-      adv = true;
-      tokens.splice(i, 1);
-    } else if (token === 'dis') {
-      dis = true;
-      tokens.splice(i, 1);
-    }
+async function loadRolls() {
+  if (!roomId || !rollHistory) return;
+  try {
+    const { rolls } = await apiRequest(`/rolls?room_id=${roomId}`);
+    rollHistory.innerHTML = '';
+    (rolls || []).reverse().forEach(renderRoll);
+  } catch (error) {
+    toast(error.message);
   }
-  const normalized = tokens.join('');
-  const detail = [];
-  let total = 0;
+}
 
-  const segments = normalized.match(/([+-]?[^+-]+)/g) || [];
-  segments.forEach((segment) => {
-    const match = segment.match(dicePattern);
-    if (match) {
-      const sign = match[1] === '-' ? -1 : 1;
-      let count = match[2] ? Number(match[2]) : 1;
-      const sides = Number(match[3]);
-      const explode = match[4] === '!';
-      let keepType = match[5];
-      let keepCount = match[6] ? Number(match[6]) : undefined;
-      if (adv || dis) {
-        if (count === 1 && sides === 20) {
-          count = 2;
-          keepType = adv ? 'kh' : 'kl';
-          keepCount = 1;
-        }
-      }
-      if (!keepCount) keepCount = count;
-      const rolls = [];
-      for (let i = 0; i < count; i += 1) {
-        let next = true;
-        while (next) {
-          const roll = Math.ceil(Math.random() * sides);
-          rolls.push(roll);
-          next = explode && roll === sides && rolls.length < 100;
-        }
-      }
-      const sorted = [...rolls].sort((a, b) => (keepType === 'kl' ? a - b : b - a));
-      const kept = sorted.slice(0, keepCount);
-      const sum = kept.reduce((acc, value) => acc + value, 0) * sign;
-      detail.push({ term: segment, rolls, kept, sum });
-      total += sum;
-    } else {
-      const value = Number(segment);
-      if (Number.isNaN(value)) {
-        toast(`Termo inválido: ${segment}`);
-        return;
-      }
-      total += value;
-      detail.push({ term: segment, sum: value });
-    }
+function initForm() {
+  if (!rollForm) return;
+  rollForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const formula = rollFormula.value.trim() || '1d20';
+    await executeRoll(formula, roomId);
+    rollFormula.value = '';
   });
+  btnRollD20?.addEventListener('click', async () => {
+    await executeRoll('1d20', roomId);
+  });
+}
 
-  const result = {
-    rolls: detail.flatMap((item) => item.rolls || []),
-    total,
-    detail,
-    label,
-    adv,
-    dis
-  };
-  return result;
+export function initDice(id) {
+  roomId = id;
+  initForm();
+  loadRolls();
 }
