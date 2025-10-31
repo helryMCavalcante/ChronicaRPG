@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ChronicaRPG</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="container">
+    <h1>ChronicaRPG</h1>
+    <p>Salas de RPG (até 10 jogadores), chat e rolagem de dados — versão estática.</p>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Salas</h2>
+      <div id="rooms" class="grid"></div>
+      <div class="row">
+        <input id="roomName" placeholder="Nome da sala" />
+        <button id="createRoom">Criar sala</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Rolagem rápida</h2>
+      <div class="row">
+        <input id="diceExpr" placeholder="Ex.: 1d20+2 #ataque" />
+        <button id="rollBtn">Rolar</button>
+      </div>
+      <pre id="diceOut" class="log"></pre>
+    </section>
+  </main>
+
+  <footer class="container muted">Versão HTML/CSS/JS puro (sem backend). Para chat/voz em tempo real, subiremos servidor depois.</footer>
+  <script src="js/app.js"></script>
+</body>
+</html>
