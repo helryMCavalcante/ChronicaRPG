@@ -1,83 +1,88 @@
-import { setTheme, toast } from './ui.js';
+import { supabase, getCurrentSession } from './supabaseClient.js';
+import { toast } from './ui.js';
 
-const PROFILE_KEY = 'chronica:profile';
+const authListeners = new Set();
 
-export function getProfile() {
-  const stored = localStorage.getItem(PROFILE_KEY);
-  if (!stored) return null;
-  try {
-    return JSON.parse(stored);
-  } catch (error) {
-    console.error('Failed to parse profile', error);
-    return null;
+function updateHeader(user) {
+  const authState = document.getElementById('auth-state');
+  const loginBtn = document.getElementById('btn-login');
+  const logoutBtn = document.getElementById('btn-logout');
+  if (authState) {
+    authState.textContent = user ? `Logado como ${user.email}` : 'Desconectado';
+  }
+  if (loginBtn) {
+    loginBtn.style.display = user ? 'none' : 'inline-flex';
+  }
+  if (logoutBtn) {
+    logoutBtn.style.display = user ? 'inline-flex' : 'none';
   }
 }
 
-export function saveProfile(profile) {
-  const data = {
-    nickname: profile.nickname.trim().slice(0, 30),
-    avatar: profile.avatar?.trim().slice(0, 200) || '',
-    theme: profile.theme === 'dark' ? 'dark' : 'light'
-  };
-  localStorage.setItem(PROFILE_KEY, JSON.stringify(data));
-  setTheme(data.theme);
-  return data;
+async function refreshAuthState() {
+  const session = await getCurrentSession();
+  const user = session?.user || null;
+  updateHeader(user);
+  authListeners.forEach((listener) => listener(user));
+  return user;
 }
 
-export function requireProfile() {
-  const profile = getProfile();
-  if (!profile) {
+export function onAuthChange(callback) {
+  authListeners.add(callback);
+  refreshAuthState();
+  return () => authListeners.delete(callback);
+}
+
+export async function requireAuth() {
+  const session = await getCurrentSession();
+  if (!session?.user) {
     window.location.href = 'index.html';
     return null;
   }
-  setTheme(profile.theme || 'light');
-  return profile;
+  return session.user;
 }
 
-function initIndex() {
-  const form = document.getElementById('profile-form');
+function initLoginForm() {
+  const form = document.getElementById('login-form');
+  const feedback = document.getElementById('login-feedback');
   if (!form) return;
-  const existing = getProfile();
-  if (existing) {
-    form.nickname.value = existing.nickname;
-    form.avatar.value = existing.avatar;
-    form.theme.value = existing.theme;
-  }
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const data = saveProfile({
-      nickname: form.nickname.value,
-      avatar: form.avatar.value,
-      theme: form.theme.value
+    const email = new FormData(form).get('email');
+    try {
+      const { error } = await supabase.auth.signInWithOtp({ email });
+      if (error) throw error;
+      if (feedback) feedback.textContent = 'Link enviado! Verifique seu e-mail.';
+    } catch (error) {
+      if (feedback) feedback.textContent = 'Falha ao enviar link.';
+      toast(error.message || 'Erro no login');
+    }
+  });
+}
+
+function initButtons() {
+  const loginBtn = document.getElementById('btn-login');
+  const logoutBtn = document.getElementById('btn-logout');
+  if (loginBtn) {
+    loginBtn.addEventListener('click', () => {
+      window.location.href = 'index.html';
     });
-    toast('Perfil salvo.');
-    setTimeout(() => {
-      window.location.href = 'lobby.html';
-    }, 250);
-  });
+  }
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      toast('Sessão encerrada.');
+      updateHeader(null);
+      if (window.location.pathname.endsWith('lobby.html') || window.location.pathname.endsWith('room.html')) {
+        window.location.href = 'index.html';
+      }
+    });
+  }
 }
 
-function initThemeButton() {
-  const btn = document.getElementById('btn-theme');
-  if (!btn) return;
-  const profile = requireProfile();
-  if (!profile) return;
-  btn.addEventListener('click', () => {
-    const next = profile.theme === 'dark' ? 'light' : 'dark';
-    const updated = saveProfile({ ...profile, theme: next });
-    Object.assign(profile, updated);
-  });
-}
+supabase.auth.onAuthStateChange(() => {
+  refreshAuthState();
+});
 
-function initLogout() {
-  const btn = document.getElementById('btn-logout');
-  if (!btn) return;
-  btn.addEventListener('click', () => {
-    localStorage.removeItem(PROFILE_KEY);
-    window.location.href = 'index.html';
-  });
-}
-
-initIndex();
-initThemeButton();
-initLogout();
+initLoginForm();
+initButtons();
+refreshAuthState();

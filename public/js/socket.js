@@ -1,32 +1,51 @@
-import { getProfile, requireProfile } from './auth.js';
+import { getAccessToken } from './supabaseClient.js';
+
+const config = window.__CHRONICA_CONFIG__ || {};
+const BASE_URL = config.SERVER_BASE_URL?.replace(/\/$/, '') || '';
 
 let socket;
 
-export function getSocket() {
-  if (socket) return socket;
-  requireProfile();
+async function connectSocket() {
+  const token = await getAccessToken();
+  if (!token) {
+    throw new Error('Sessão inválida');
+  }
   if (!window.io) {
-    throw new Error('Socket.IO client não carregado');
+    throw new Error('Socket.IO não carregado');
   }
-  socket = window.io({ transports: ['websocket'], autoConnect: false });
-  socket.connect();
-  const profile = getProfile();
-  if (profile) {
-    socket.emit('identity:set', profile);
-  }
+  socket = window.io(BASE_URL, {
+    transports: ['websocket'],
+    auth: { token },
+    autoConnect: true
+  });
   return socket;
 }
 
-export function once(event, handler) {
-  getSocket().once(event, handler);
+export async function getSocket() {
+  if (socket?.connected) {
+    return socket;
+  }
+  if (socket && !socket.connected) {
+    socket.auth = { token: await getAccessToken() };
+    socket.connect();
+    return socket;
+  }
+  return connectSocket();
 }
 
-export function on(event, handler) {
-  getSocket().on(event, handler);
+export async function emit(event, payload, callback) {
+  const instance = await getSocket();
+  instance.emit(event, payload, callback);
 }
 
-export function emit(event, payload, callback) {
-  getSocket().emit(event, payload, callback);
+export async function on(event, handler) {
+  const instance = await getSocket();
+  instance.on(event, handler);
+}
+
+export function off(event, handler) {
+  if (!socket) return;
+  socket.off(event, handler);
 }
 
 export function disconnect() {
