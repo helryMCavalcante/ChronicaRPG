@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChronicaRPG · Lobby</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+</head>
+<body>
+  <main>
+    <header class="nav-actions">
+      <div>
+        <h1>Salas</h1>
+        <p>Crie ou entre em mesas com até 10 participantes.</p>
+      </div>
+      <div class="theme-toggle">
+        <button id="btn-theme" class="ghost" type="button" aria-label="Alternar tema">🌗</button>
+        <button id="btn-logout" class="ghost" type="button">Trocar perfil</button>
+      </div>
+    </header>
+
+    <section class="card">
+      <h2>Nova sala</h2>
+      <form id="create-room" class="form-grid two">
+        <label>
+          <span>Nome</span>
+          <input name="name" required maxlength="50" placeholder="Expedição ao Norte">
+        </label>
+        <label>
+          <span>Descrição</span>
+          <input name="description" maxlength="200" placeholder="Sessão cooperativa">
+        </label>
+        <label>
+          <span>Privada?</span>
+          <select name="isPrivate">
+            <option value="no" selected>Não</option>
+            <option value="yes">Sim</option>
+          </select>
+        </label>
+        <label>
+          <span>Senha (opcional)</span>
+          <input name="password" maxlength="100" placeholder="****">
+        </label>
+        <button class="primary" type="submit">Criar sala</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>Disponíveis</h2>
+      <div id="rooms" class="card-list" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <div class="toast-container" aria-live="assertive"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module" src="js/ui.js"></script>
+  <script type="module" src="js/auth.js"></script>
+  <script type="module" src="js/socket.js"></script>
+  <script type="module" src="js/lobby.js"></script>
+</body>
+</html>
