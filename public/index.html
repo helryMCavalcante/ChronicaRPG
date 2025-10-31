@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChronicaRPG · Entrar</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+</head>
+<body>
+  <main>
+    <header>
+      <h1>ChronicaRPG</h1>
+      <p>Configure seu perfil para entrar nas mesas de jogo.</p>
+    </header>
+
+    <form id="profile-form" class="form-grid" autocomplete="off">
+      <label>
+        <span>Apelido</span>
+        <input type="text" name="nickname" maxlength="30" required placeholder="Arcanista99">
+      </label>
+      <label>
+        <span>URL do avatar (opcional)</span>
+        <input type="url" name="avatar" placeholder="https://">
+      </label>
+      <fieldset class="theme-toggle">
+        <legend class="visually-hidden">Tema</legend>
+        <span>Tema</span>
+        <label><input type="radio" name="theme" value="light" checked> Claro</label>
+        <label><input type="radio" name="theme" value="dark"> Escuro</label>
+      </fieldset>
+      <button class="primary" type="submit">Salvar e entrar</button>
+    </form>
+  </main>
+
+  <div class="toast-container" aria-live="assertive"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module" src="js/ui.js"></script>
+  <script type="module" src="js/auth.js"></script>
+</body>
+</html>

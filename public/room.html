@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChronicaRPG · Mesa</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/room.css">
+</head>
+<body>
+  <div class="room-shell">
+    <aside class="sidebar">
+      <header>
+        <h2 id="room-name">Mesa</h2>
+        <p id="room-description" class="muted"></p>
+      </header>
+
+      <section>
+        <header class="nav-actions">
+          <h3>Canais</h3>
+          <button id="btn-add-channel" class="ghost" type="button">+</button>
+        </header>
+        <div id="channel-list" class="channel-list" role="tablist"></div>
+      </section>
+
+      <section>
+        <header class="nav-actions">
+          <h3>Jogadores</h3>
+          <button id="btn-presence" class="ghost" type="button">Atualizar</button>
+        </header>
+        <div id="user-list" class="user-list" aria-live="polite"></div>
+      </section>
+
+      <section class="voice-panel">
+        <h3>Voz</h3>
+        <div class="voice-controls">
+          <button id="btn-voice" class="primary" type="button">Conectar voz</button>
+          <button id="btn-mute" class="ghost" type="button">Mute (M)</button>
+        </div>
+        <div id="voice-peers" class="voice-peers"></div>
+      </section>
+    </aside>
+
+    <main class="main">
+      <section class="chat-panel" aria-live="polite">
+        <header class="nav-actions">
+          <h3 id="active-channel">Chat</h3>
+          <div class="list-inline">
+            <span>/ para focar</span>
+            <span>Ctrl+K para ir</span>
+          </div>
+        </header>
+        <div id="chat-log" class="chat-log" tabindex="0" aria-label="Histórico de mensagens"></div>
+        <form id="chat-form" class="chat-input">
+          <input id="chat-input" autocomplete="off" placeholder="Digite uma mensagem ou comando (/roll, /w)" aria-label="Mensagem">
+          <button class="primary" type="submit">Enviar</button>
+        </form>
+      </section>
+    </main>
+
+    <aside class="sheet-panel">
+      <header class="nav-actions">
+        <h3>Ficha ativa</h3>
+        <button id="btn-export-sheet" class="ghost" type="button">Copiar</button>
+      </header>
+      <form id="sheet-form" class="sheet-form" autocomplete="off">
+        <label>
+          <span>Nome do personagem</span>
+          <input name="character" maxlength="80">
+        </label>
+        <div class="sheet-grid two">
+          <label>
+            <span>Classe</span>
+            <input name="class" maxlength="60">
+          </label>
+          <label>
+            <span>Nível</span>
+            <input name="level" maxlength="10">
+          </label>
+        </div>
+        <div class="sheet-grid two">
+          <label>
+            <span>Pontos de Vida</span>
+            <input name="hp" maxlength="20">
+          </label>
+          <label>
+            <span>Recursos</span>
+            <input name="resources" maxlength="60">
+          </label>
+        </div>
+        <label>
+          <span>Atributos & Perícias</span>
+          <textarea name="stats" maxlength="2000"></textarea>
+        </label>
+        <label>
+          <span>Inventário</span>
+          <textarea name="inventory" maxlength="2000"></textarea>
+        </label>
+        <label>
+          <span>Notas</span>
+          <textarea name="notes" maxlength="3000"></textarea>
+        </label>
+      </form>
+    </aside>
+  </div>
+
+  <div class="float-roll">
+    <button id="btn-roll-d20" class="primary" type="button">Roll d20</button>
+    <button id="btn-roll-custom" class="ghost" type="button">Custom</button>
+  </div>
+
+  <div class="toast-container" aria-live="assertive"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module" src="js/ui.js"></script>
+  <script type="module" src="js/socket.js"></script>
+  <script type="module" src="js/auth.js"></script>
+  <script type="module" src="js/dice.js"></script>
+  <script type="module" src="js/chat.js"></script>
+  <script type="module" src="js/voice.js"></script>
+  <script type="module" src="js/presence.js"></script>
+  <script type="module" src="js/sheets.js"></script>
+</body>
+</html>
